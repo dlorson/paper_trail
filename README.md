@@ -57,13 +57,13 @@ widget.live?
 widget.originator
 
 # Returns the widget (not a version) as it looked at the given timestamp.
-widget.version_at(timestamp)
+widget.modification_at(timestamp)
 
 # Returns the widget (not a version) as it was most recently.
-widget.previous_version
+widget.previous_modification
 
 # Returns the widget (not a version) as it became next.
-widget.next_version
+widget.next_modification
 
 # Turn PaperTrail off for all widgets.
 Widget.paper_trail_off
@@ -225,7 +225,7 @@ This means that changes to just the `title` or `rating` will not store another v
 >> a.versions.length                         # 1
 >> a.update_attributes :title => 'Greeting', :content => 'Hello'
 >> a.versions.length                         # 2
->> a.previous_version.title                  # 'My Title'
+>> a.previous_modification.title                  # 'My Title'
 ```
 
 Or, you can specify a list of all attributes you care about:
@@ -245,7 +245,7 @@ This means that only changes to the `title` will save a version of the article:
 >> a.versions.length                         # 2
 >> a.update_attributes :content => 'Hello'
 >> a.versions.length                         # 2
->> a.previous_version.content                # nil
+>> a.previous_modification.content                # nil
 ```
 
 Passing both `:ignore` and `:only` options will result in the article being saved if a changed attribute is included in `:only` but not in `:ignore`.
@@ -268,14 +268,14 @@ PaperTrail makes reverting to a previous version easy:
 >> widget = Widget.find 42
 >> widget.update_attributes :name => 'Blah blah'
 # Time passes....
->> widget = widget.previous_version  # the widget as it was before the update
+>> widget = widget.previous_modification  # the widget as it was before the update
 >> widget.save                       # reverted
 ```
 
 Alternatively you can find the version at a given time:
 
 ```ruby
->> widget = widget.version_at(1.day.ago)  # the widget as it was one day ago
+>> widget = widget.modification_at(1.day.ago)  # the widget as it was one day ago
 >> widget.save                            # reverted
 ```
 
@@ -287,7 +287,7 @@ Undeleting is just as simple:
 >> widget = Widget.find 42
 >> widget.destroy
 # Time passes....
->> widget = Version.find(153).reify    # the widget as it was before it was destroyed
+>> widget = PaperTrail::Modification.find(153).reify    # the widget as it was before it was destroyed
 >> widget.save                         # the widget lives!
 ```
 
@@ -296,18 +296,18 @@ In fact you could use PaperTrail to implement an undo system, though I haven't h
 
 ## Navigating Versions
 
-You can call `previous_version` and `next_version` on an item to get it as it was/became.  Note that these methods reify the item for you.
+You can call `previous_modification` and `next_modification` on an item to get it as it was/became.  Note that these methods reify the item for you.
 
 ```ruby
 >> live_widget = Widget.find 42
 >> live_widget.versions.length            # 4 for example
->> widget = live_widget.previous_version  # => widget == live_widget.versions.last.reify
->> widget = widget.previous_version       # => widget == live_widget.versions[-2].reify
->> widget = widget.next_version           # => widget == live_widget.versions.last.reify
->> widget.next_version                    # nil
+>> widget = live_widget.previous_modification  # => widget == live_widget.versions.last.reify
+>> widget = widget.previous_modification       # => widget == live_widget.versions[-2].reify
+>> widget = widget.next_modification           # => widget == live_widget.versions.last.reify
+>> widget.next_modification                    # nil
 ```
 
-As an aside, I'm undecided about whether `widget.previous_version.next_version` should return `nil` or `self` (i.e. `widget`).  Let me know if you have a view.
+As an aside, I'm undecided about whether `widget.previous_modification.next_modification` should return `nil` or `self` (i.e. `widget`).  Let me know if you have a view.
 
 If instead you have a particular `version` of an item you can navigate to the previous and next versions.
 
@@ -337,7 +337,7 @@ You can find out whether a model instance is the current, live one -- or whether
 ```ruby
 >> widget = Widget.find 42
 >> widget.live?                        # true
->> widget = widget.previous_version
+>> widget = widget.previous_modification
 >> widget.live?                        # false
 ```
 
@@ -434,7 +434,7 @@ If you only use custom version classes and don't use PaperTrail's built-in one, 
 - either declare PaperTrail's version class abstract like this (in `config/initializers/paper_trail_patch.rb`):
 
 ```ruby
-Version.module_eval do
+PaperTrail::Modification.module_eval do
   self.abstract_class = true
 end
 ```
@@ -445,8 +445,8 @@ You can also specify custom names for the versions and version associations.  Th
 
 ```ruby
 class Post < ActiveRecord::Base
-  has_paper_trail :versions => :paper_trail_versions,
-                  :version  => :paper_trail_version
+  has_paper_trail :modifications => :paper_trail_versions,
+                  :modification  => :paper_trail_version
 
   # Existing versions method.  We don't want to clash.
   def versions
@@ -600,7 +600,7 @@ end
 Why would you do this?  In this example, `author_id` is an attribute of `Article` and PaperTrail will store it anyway in serialized (YAML) form in the `object` column of the `version` record.  But let's say you wanted to pull out all versions for a particular author; without the metadata you would have to deserialize (reify) each `version` object to see if belonged to the author in question.  Clearly this is inefficient.  Using the metadata you can find just those versions you want:
 
 ```ruby
-Version.all(:conditions => ['author_id = ?', author_id])
+PaperTrail::Modification.all(:conditions => ['author_id = ?', author_id])
 ```
 
 Note you can pass a symbol as a value in the `meta` hash to signal a method to call.
@@ -727,16 +727,16 @@ And on again like this:
 
 ### Per method call
 
-You can call a method without creating a new version using `without_versioning`.  It takes either a method name as a symbol:
+You can call a method without creating a new version using `without_modification_tracking`.  It takes either a method name as a symbol:
 
 ```ruby
-@widget.without_versioning :destroy
+@widget.without_modification_tracking :destroy
 ```
 
 Or a block:
 
 ```ruby
-@widget.without_versioning do
+@widget.without_modification_tracking do
   @widget.update_attributes :name => 'Ford'
 end
 ```
@@ -763,7 +763,7 @@ sql> delete from versions where created_at < 2010-06-01;
 ```
 
 ```ruby
->> Version.delete_all ["created_at < ?", 1.week.ago]
+>> PaperTrail::Modification.delete_all ["created_at < ?", 1.week.ago]
 ```
 
 ## Installation

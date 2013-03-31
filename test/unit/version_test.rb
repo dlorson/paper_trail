@@ -1,41 +1,41 @@
 require 'test_helper'
 
-class VersionTest < ActiveSupport::TestCase
+class ModificationTest < ActiveSupport::TestCase
   setup {
     change_schema
     @article = Animal.create
-    assert Version.creates.present?
+    assert PaperTrail::Modification.creates.present?
   }
 
-  context "Version.creates" do
+  context "PaperTrail::Modification.creates" do
     should "return only create events" do
-      Version.creates.each do |version|
+      PaperTrail::Modification.creates.each do |version|
         assert_equal "create", version.event
       end
     end
   end
 
-  context "Version.updates" do
+  context "PaperTrail::Modification.updates" do
     setup {
       @article.update_attributes(:name => 'Animal')
-      assert Version.updates.present?
+      assert PaperTrail::Modification.updates.present?
     }
 
     should "return only update events" do
-      Version.updates.each do |version|
+      PaperTrail::Modification.updates.each do |version|
         assert_equal "update", version.event
       end
     end
   end
 
-  context "Version.destroys" do
+  context "PaperTrail::Modification.destroys" do
     setup {
       @article.destroy
-      assert Version.destroys.present?
+      assert PaperTrail::Modification.destroys.present?
     }
 
     should "return only destroy events" do
-      Version.destroys.each do |version|
+      PaperTrail::Modification.destroys.each do |version|
         assert_equal "destroy", version.event
       end
     end

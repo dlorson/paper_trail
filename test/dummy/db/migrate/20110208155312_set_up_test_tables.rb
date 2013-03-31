@@ -15,7 +15,7 @@ class SetUpTestTables < ActiveRecord::Migration
       t.string    :type
     end
 
-    create_table :versions, :force => true do |t|
+    create_table :modifications, :force => true do |t|
       t.string   :item_type, :null => false
       t.integer  :item_id,   :null => false
       t.string   :event,     :null => false
@@ -35,9 +35,9 @@ class SetUpTestTables < ActiveRecord::Migration
       t.string :ip
       t.string :user_agent
     end
-    add_index :versions, [:item_type, :item_id]
+    add_index :modifications, [:item_type, :item_id]
 
-    create_table :post_versions, :force => true do |t|
+    create_table :post_modifications, :force => true do |t|
       t.string   :item_type, :null => false
       t.integer  :item_id,   :null => false
       t.string   :event,     :null => false
@@ -49,7 +49,7 @@ class SetUpTestTables < ActiveRecord::Migration
       t.string :ip
       t.string :user_agent
     end
-    add_index :post_versions, [:item_type, :item_id]
+    add_index :post_modifications, [:item_type, :item_id]
 
     create_table :wotsits, :force => true do |t|
       t.integer :widget_id
@@ -103,7 +103,7 @@ class SetUpTestTables < ActiveRecord::Migration
     
     create_table :legacy_widgets, :force => true do |t|
       t.string    :name
-      t.integer   :version
+      t.integer   :modification
     end
 
     create_table :translations, :force => true do |t|
@@ -124,10 +124,10 @@ class SetUpTestTables < ActiveRecord::Migration
     drop_table :articles
     drop_table :fluxors
     drop_table :wotsits
-    remove_index :post_versions, :column => [:item_type, :item_id]
+    remove_index :post_modifications, :column => [:item_type, :item_id]
     drop_table :post_versions
-    remove_index :versions, :column => [:item_type, :item_id]
-    drop_table :versions
+    remove_index :post_modifications, :column => [:item_type, :item_id]
+    drop_table :modifications
     drop_table :widgets
     drop_table :documents
     drop_table :legacy_widgets

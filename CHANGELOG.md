@@ -5,7 +5,7 @@
 ## 2.7.1
 
   - [#206](https://github.com/airblade/paper_trail/issues/206) - Fixed Ruby 1.8.7 compatibility for tracking `object_changes`.
-  - [#200](https://github.com/airblade/paper_trail/issues/200) - Fixed `next_version` method so that it returns the live model
+  - [#200](https://github.com/airblade/paper_trail/issues/200) - Fixed `next_modification` method so that it returns the live model
     when called on latest reified version of a model prior to the live model.
   - [#197](https://github.com/airblade/paper_trail/issues/197) - PaperTrail now falls back on using YAML for serialization of
     serialized model attributes for storage in the `object` and `object_changes` columns in the `Version` table. This fixes
@@ -32,7 +32,7 @@
   - [#181](https://github.com/airblade/paper_trail/issues/181)/[#182](https://github.com/airblade/paper_trail/pull/182) -
     Controller metadata methods should only be evaluated when `paper_trail_enabled_for_controller == true`.
   - [#177](https://github.com/airblade/paper_trail/issues/177)/[#178](https://github.com/airblade/paper_trail/pull/178) -
-    Factored out `version_key` into it's own method to prevent `ConnectionNotEstablished` error from getting thrown in
+    Factored out `modification_key` into it's own method to prevent `ConnectionNotEstablished` error from getting thrown in
     instances where `has_paper_trail` is declared on class prior to ActiveRecord establishing a connection.
   - [#176](https://github.com/airblade/paper_trail/pull/176) - Force metadata calls for attributes to use current value
     if attribute value is changing.

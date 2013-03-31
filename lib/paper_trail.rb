@@ -1,7 +1,7 @@
 require 'paper_trail/config'
 require 'paper_trail/controller'
 require 'paper_trail/has_paper_trail'
-require 'paper_trail/version'
+require 'paper_trail/modification'
 
 require 'paper_trail/serializers/yaml'
 require 'paper_trail/serializers/json'
@@ -32,12 +32,12 @@ module PaperTrail
     paper_trail_store[:request_enabled_for_controller] = value
   end
 
-  # Set the field which records when a version was created.
+  # Set the field which records when a modification was created.
   def self.timestamp_field=(field_name)
     PaperTrail.config.timestamp_field = field_name
   end
 
-  # Returns the field which records when a version was created.
+  # Returns the field which records when a modification was created.
   def self.timestamp_field
     PaperTrail.config.timestamp_field
   end

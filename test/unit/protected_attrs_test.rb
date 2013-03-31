@@ -18,7 +18,7 @@ class ProtectedAttrsTest < ActiveSupport::TestCase
     end
 
     should 'be `nil` in its previous version' do
-      assert_nil @widget.previous_version
+      assert_nil @widget.previous_modification
     end
 
     context 'which is then updated' do
@@ -29,11 +29,11 @@ class ProtectedAttrsTest < ActiveSupport::TestCase
       end
 
       should 'not be `nil` in its previous version' do
-        assert_not_nil @widget.previous_version
+        assert_not_nil @widget.previous_modification
       end
 
       should 'the previous version should contain right attributes' do
-        assert_equal @widget.previous_version.attributes, @initial_attributes
+        assert_equal @widget.previous_modification.attributes, @initial_attributes
       end
     end
 
